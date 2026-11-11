@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Catálogo Express</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body class="bg-gray-100 min-h-screen text-gray-800 pb-20">
+
+  <!-- Header -->
+  <header class="bg-indigo-600 text-white p-4 sticky top-0 z-50 shadow-md">
+    <div class="max-w-md mx-auto flex justify-between items-center">
+      <div>
+        <h1 class="text-xl font-bold tracking-tight">Mi Tienda Express</h1>
+        <p class="text-xs text-indigo-200">Enviamos directo a tu WhatsApp</p>
+      </div>
+      <button id="cart-btn" onclick="toggleCartModal()" class="relative bg-indigo-700 p-2.5 rounded-full hover:bg-indigo-800 transition">
+        <i class="fas me-1 fa-shopping-bag text-lg"></i>
+        <span id="cart-count" class="absolute -top-1 -right-1 bg-rose-500 text-white text-xs w-5 h-5 rounded-full flex items-center justify-center font-bold">0</span>
+      </button>
+    </div>
+  </header>
+
+  <main class="max-w-md mx-auto p-4 space-y-4">
+    <!-- Search & Filter -->
+    <div class="relative">
+      <input type="text" id="search-input" onkeyup="filterProducts()" placeholder="Buscar prendas, cocina, Yanbal..." class="w-full pl-10 pr-4 py-2.5 rounded-xl border border-gray-300 focus:ring-2 focus:ring-indigo-500 focus:outline-none shadow-sm">
+      <i class="fas fa-search absolute left-3.5 top-3.5 text-gray-400"></i>
+    </div>
+
+    <!-- Category Tabs -->
+    <div class="flex gap-2 overflow-x-auto pb-2 scrollbar-none" id="category-tabs">
+      <button onclick="selectCategory('todas')" class="cat-btn bg-indigo-600 text-white px-4 py-1.5 rounded-full text-sm font-medium whitespace-nowrap shadow-sm">Todas</button>
+      <button onclick="selectCategory('Damas')" class="cat-btn bg-white text-gray-600 px-4 py-1.5 rounded-full text-sm font-medium whitespace-nowrap shadow-sm hover:bg-gray-50">Damas</button>
+      <button onclick="selectCategory('Caballeros')" class="cat-btn bg-white text-gray-600 px-4 py-1.5 rounded-full text-sm font-medium whitespace-nowrap shadow-sm hover:bg-gray-50">Caballeros</button>
+      <button onclick="selectCategory('Niños')" class="cat-btn bg-white text-gray-600 px-4 py-1.5 rounded-full text-sm font-medium whitespace-nowrap shadow-sm hover:bg-gray-50">Niños</button>
+      <button onclick="selectCategory('Cocina')" class="cat-btn bg-white text-gray-600 px-4 py-1.5 rounded-full text-sm font-medium whitespace-nowrap shadow-sm hover:bg-gray-50">Cocina</button>
+      <button onclick="selectCategory('Yanbal')" class="cat-btn bg-white text-gray-600 px-4 py-1.5 rounded-full text-sm font-medium whitespace-nowrap shadow-sm hover:bg-gray-50">Yanbal</button>
+    </div>
+
+    <!-- Product Grid -->
+    <div id="product-grid" class="grid grid-cols-2 gap-3">
+      <!-- Generated via JS -->
+    </div>
+  </main>
+
+  <!-- Cart Modal -->
+  <div id="cart-modal" class="fixed inset-0 bg-black/50 z-50 hidden flex justify-end">
+    <div class="bg-white w-full max-w-md h-full flex flex-col justify-between p-4 shadow-xl">
+      <div>
+        <div class="flex justify-between items-center border-b pb-3 mb-4">
+          <h2 class="text-lg font-bold">Mi Carrito</h2>
+          <button onclick="toggleCartModal()" class="text-gray-400 hover:text-gray-600 text-xl font-bold">&times;</button>
+        </div>
+        <div id="cart-items" class="space-y-3 max-h-[50vh] overflow-y-auto pr-1">
+          <!-- Cart Items -->
+        </div>
+      </div>
+      
+      <div class="border-t pt-3 space-y-3">
+        <div class="flex justify-between font-bold text-lg">
+          <span>Total:</span>
+          <span id="cart-total" class="text-indigo-600">Q0.00</span>
+        </div>
+        
+        <input type="text" id="client-name" placeholder="Tu Nombre completo" class="w-full p-2.5 rounded-lg border border-gray-300 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500">
+        <input type="text" id="client-address" placeholder="Dirección de entrega" class="w-full p-2.5 rounded-lg border border-gray-300 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500">
+        
+        <button onclick="sendOrderToWhatsApp()" class="w-full bg-emerald-600 text-white font-bold py-3 rounded-xl hover:bg-emerald-700 transition flex items-center justify-center gap-2">
+          <i class="fab fa-whatsapp text-xl"></i> Enviar Pedido por WhatsApp
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const INITIAL_PRODUCTS = [
+      { id: 1, name: "Vestido Casual Elegante", price: 150, category: "Damas", image: "https://images.unsplash.com/photo-1572804013309-59a88b7e92f1?w=400" },
+      { id: 2, name: "Camisa Manga Larga Hombre", price: 120, category: "Caballeros", image: "https://images.unsplash.com/photo-1596755094514-f87e34085b2c?w=400" },
+      { id: 3, name: "Set Utensilios Silicona 12 piezas", price: 95, category: "Cocina", image: "https://images.unsplash.com/photo-1584269600464-37b1b58a9fe7?w=400" },
+      { id: 4, name: "Perfume Ccorori Yanbal 50ml", price: 210, category: "Yanbal", image: "https://images.unsplash.com/photo-1592945403244-b3fbafd7f539?w=400" }
+    ];
+
+    let products = JSON.parse(localStorage.getItem('app_products')) || INITIAL_PRODUCTS;
+    let cart = [];
+    let activeCategory = 'todas';
+
+    function saveProducts() {
+      localStorage.setItem('app_products', JSON.stringify(products));
+    }
+
+    function renderProducts() {
+      const grid = document.getElementById('product-grid');
+      const search = document.getElementById('search-input').value.toLowerCase();
+      
+      const filtered = products.filter(p => {
+        const matchesCat = activeCategory === 'todas' || p.category === activeCategory;
+        const matchesSearch = p.name.toLowerCase().includes(search);
+        return matchesCat && matchesSearch;
+      });
+
+      if(filtered.length === 0) {
+        grid.innerHTML = `<div class="col-span-2 text-center py-8 text-gray-400">No se encontraron productos</div>`;
+        return;
+      }
+
+      grid.innerHTML = filtered.map(p => `
+        <div class="bg-white rounded-xl shadow-sm overflow-hidden flex flex-col justify-between">
+          <img src="${p.image}" alt="${p.name}" class="h-36 w-full object-cover">
+          <div class="p-3 flex-1 flex flex-col justify-between">
+            <div>
+              <span class="text-[10px] font-semibold text-indigo-600 uppercase tracking-wider">${p.category}</span>
+              <h3 class="font-bold text-gray-800 text-sm leading-tight line-clamp-2">${p.name}</h3>
+            </div>
+            <div class="mt-2 flex items-center justify-between">
+              <span class="font-extrabold text-indigo-700 text-base">Q${p.price.toFixed(2)}</span>
+              <button onclick="addToCart(${p.id})" class="bg-indigo-600 text-white p-2 rounded-lg hover:bg-indigo-700 transition">
+                <i class="fas fa-plus text-xs"></i>
+              </button>
+            </div>
+          </div>
+        </div>
+      `).join('');
+    }
+
+    function selectCategory(cat) {
+      activeCategory = cat;
+      document.querySelectorAll('.cat-btn').forEach(b => {
+        b.className = b.innerText.toLowerCase() === cat.toLowerCase() || (cat==='todas' && b.innerText==='Todas')
+          ? 'cat-btn bg-indigo-600 text-white px-4 py-1.5 rounded-full text-sm font-medium whitespace-nowrap shadow-sm'
+          : 'cat-btn bg-white text-gray-600 px-4 py-1.5 rounded-full text-sm font-medium whitespace-nowrap shadow-sm hover:bg-gray-50';
+      });
+      renderProducts();
+    }
+
+    function filterProducts() {
+      renderProducts();
+    }
+
+    function addToCart(id) {
+      const prod = products.find(p => p.id === id);
+      const existing = cart.find(item => item.id === id);
+      if(existing) {
+        existing.qty++;
+      } else {
+        cart.push({ ...prod, qty: 1 });
+      }
+      updateCartUI();
+    }
+
+    function updateCartUI() {
+      document.getElementById('cart-count').innerText = cart.reduce((acc, i) => acc + i.qty, 0);
+      const cartItems = document.getElementById('cart-items');
+      const total = cart.reduce((acc, i) => acc + (i.price * i.qty), 0);
+      
+      document.getElementById('cart-total').innerText = `Q${total.toFixed(2)}`;
+      
+      cartItems.innerHTML = cart.map(i => `
+        <div class="flex justify-between items-center bg-gray-50 p-2.5 rounded-lg border">
+          <div class="flex-1 pr-2">
+            <h4 class="font-bold text-sm text-gray-800">${i.name}</h4>
+            <span class="text-xs text-gray-500">Q${i.price} x ${i.qty}</span>
+          </div>
+          <div class="flex items-center gap-2">
+            <button onclick="changeQty(${i.id}, -1)" class="w-6 h-6 bg-gray-200 rounded font-bold text-xs">-</button>
+            <span class="text-xs font-bold">${i.qty}</span>
+            <button onclick="changeQty(${i.id}, 1)" class="w-6 h-6 bg-gray-200 rounded font-bold text-xs">+</button>
+          </div>
+        </div>
+      `).join('');
+    }
+
+    function changeQty(id, delta) {
+      const item = cart.find(i => i.id === id);
+      if(item) {
+        item.qty += delta;
+        if(item.qty <= 0) cart = cart.filter(i => i.id !== id);
+      }
+      updateCartUI();
+    }
+
+    function toggleCartModal() {
+      document.getElementById('cart-modal').classList.toggle('hidden');
+    }
+
+    function sendOrderToWhatsApp() {
+      const name = document.getElementById('client-name').value;
+      const addr = document.getElementById('client-address').value;
+      
+      if(cart.length === 0) return alert('El carrito está vacío');
+      if(!name || !addr) return alert('Por favor ingresa tu nombre y dirección');
+
+      let msg = `*NUEVO PEDIDO DE COMPRA*\n\n`;
+      msg += `*Cliente:* ${name}\n`;
+      msg += `*Dirección:* ${addr}\n\n`;
+      msg += `*Detalle del pedido:*\n`;
+      
+      cart.forEach(i => {
+        msg += `• ${i.name} x${i.qty} - Q${(i.price * i.qty).toFixed(2)}\n`;
+      });
+      
+      const total = cart.reduce((acc, i) => acc + (i.price * i.qty), 0);
+      msg += `\n*Total a pagar:* Q${total.toFixed(2)}`;
+
+      const phone = "50200000000"; // Reemplazar por número real de la comerciante
+      window.open(`https://wa.me/${phone}?text=${encodeURIComponent(msg)}`, '_blank');
+    }
+
+    renderProducts();
+  </script>
+</body>
+</html>

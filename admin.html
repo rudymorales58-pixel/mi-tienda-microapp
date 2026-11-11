@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Panel Administrador - Catálogo</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body class="bg-gray-100 min-h-screen text-gray-800 p-4">
+
+  <div class="max-w-md mx-auto space-y-6">
+    <header class="flex justify-between items-center border-b pb-3">
+      <div>
+        <h1 class="text-xl font-bold text-gray-800">Panel de Administración</h1>
+        <p class="text-xs text-gray-500">Agrega o elimina productos de tu tienda</p>
+      </div>
+      <a href="index.html" class="text-xs bg-indigo-100 text-indigo-700 px-3 py-1.5 rounded-lg font-bold">Ver Tienda</a>
+    </header>
+
+    <!-- Form -->
+    <div class="bg-white p-4 rounded-xl shadow-sm border space-y-3">
+      <h2 class="font-bold text-sm text-gray-700">Agregar Nuevo Producto</h2>
+      
+      <input type="text" id="prod-name" placeholder="Nombre del producto" class="w-full p-2.5 rounded-lg border text-sm focus:ring-2 focus:ring-indigo-500 focus:outline-none">
+      
+      <div class="grid grid-cols-2 gap-2">
+        <input type="number" id="prod-price" placeholder="Precio (Q)" class="w-full p-2.5 rounded-lg border text-sm focus:ring-2 focus:ring-indigo-500 focus:outline-none">
+        <select id="prod-cat" class="w-full p-2.5 rounded-lg border text-sm focus:ring-2 focus:ring-indigo-500 focus:outline-none">
+          <option value="Damas">Damas</option>
+          <option value="Caballeros">Caballeros</option>
+          <option value="Niños">Niños</option>
+          <option value="Cocina">Cocina</option>
+          <option value="Yanbal">Yanbal</option>
+        </select>
+      </div>
+      
+      <input type="text" id="prod-img" placeholder="URL de la Foto (Ej: Unsplash / Imgur)" class="w-full p-2.5 rounded-lg border text-sm focus:ring-2 focus:ring-indigo-500 focus:outline-none">
+
+      <button onclick="addProduct()" class="w-full bg-indigo-600 text-white font-bold py-2.5 rounded-lg hover:bg-indigo-700 transition">
+        <i class="fas fa-plus me-1"></i> Guardar Producto
+      </button>
+    </div>
+
+    <!-- Product List -->
+    <div class="bg-white p-4 rounded-xl shadow-sm border space-y-3">
+      <h2 class="font-bold text-sm text-gray-700">Inventario Actual</h2>
+      <div id="admin-product-list" class="space-y-2">
+        <!-- Rendered via JS -->
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const INITIAL_PRODUCTS = [
+      { id: 1, name: "Vestido Casual Elegante", price: 150, category: "Damas", image: "https://images.unsplash.com/photo-1572804013309-59a88b7e92f1?w=400" },
+      { id: 2, name: "Camisa Manga Larga Hombre", price: 120, category: "Caballeros", image: "https://images.unsplash.com/photo-1596755094514-f87e34085b2c?w=400" },
+      { id: 3, name: "Set Utensilios Silicona 12 piezas", price: 95, category: "Cocina", image: "https://images.unsplash.com/photo-1584269600464-37b1b58a9fe7?w=400" },
+      { id: 4, name: "Perfume Ccorori Yanbal 50ml", price: 210, category: "Yanbal", image: "https://images.unsplash.com/photo-1592945403244-b3fbafd7f539?w=400" }
+    ];
+
+    let products = JSON.parse(localStorage.getItem('app_products')) || INITIAL_PRODUCTS;
+
+    function saveAndRender() {
+      localStorage.setItem('app_products', JSON.stringify(products));
+      renderList();
+    }
+
+    function renderList() {
+      const list = document.getElementById('admin-product-list');
+      list.innerHTML = products.map(p => `
+        <div class="flex items-center justify-between p-2.5 bg-gray-50 rounded-lg border">
+          <img src="${p.image}" class="w-10 h-10 object-cover rounded">
+          <div class="flex-1 ml-3">
+            <h4 class="font-bold text-xs text-gray-800">${p.name}</h4>
+            <span class="text-[10px] text-gray-500">${p.category} - Q${p.price}</span>
+          </div>
+          <button onclick="deleteProduct(${p.id})" class="text-rose-500 hover:text-rose-700 p-1">
+            <i class="fas fa-trash text-xs"></i>
+          </button>
+        </div>
+      `).join('');
+    }
+
+    function addProduct() {
+      const name = document.getElementById('prod-name').value;
+      const price = parseFloat(document.getElementById('prod-price').value);
+      const cat = document.getElementById('prod-cat').value;
+      const img = document.getElementById('prod-img').value || 'https://via.placeholder.com/150';
+
+      if(!name || !price) return alert('Ingresa nombre y precio');
+
+      const newProd = {
+        id: Date.now(),
+        name: name,
+        price: price,
+        category: cat,
+        image: img
+      };
+
+      products.push(newProd);
+      saveAndRender();
+
+      document.getElementById('prod-name').value = '';
+      document.getElementById('prod-price').value = '';
+      document.getElementById('prod-img').value = '';
+    }
+
+    function deleteProduct(id) {
+      if(confirm('¿Eliminar este producto?')) {
+        products = products.filter(p => p.id !== id);
+        saveAndRender();
+      }
+    }
+
+    renderList();
+  </script>
+</body>
+</html>
